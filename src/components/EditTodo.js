@@ -7,7 +7,6 @@ import { userUpdate, saveUser, deleteUser } from '../actions';
 import { connect } from 'react-redux';
 import _ from 'lodash'
 import Icon from 'react-native-vector-icons/FontAwesome'
-import { withNavigation } from 'react-navigation';
 import firebase from 'firebase'
 
 
@@ -37,15 +36,19 @@ class EditTodo extends Component {
     }
 
     onTextButtonPress(){
-        const { phoneNum } = this.props;
-        console.log(phoneNum)
-        //Communications.text(phoneNum, `hello from my app`);   
+        const { phoneNum } = this.props.navigation.state.params;
+        Communications.text(phoneNum, `hello from my app`);   
     }
 
     onSavedPressed(){
-       const { firstName, lastName, phoneNum, email, gender, uid , navigation} = this.props.navigation.state.params;
-      // console.log(firstName, lastName, phoneNum, email, gender, uid )   
-       this.props.saveUser({ firstName, lastName, phoneNum, email, gender, uid, navigation})
+        const { currentUser } = firebase.auth();
+        const { firstName, lastName, phoneNum, email, gender, uid } = this.props.navigation.state.params;
+        
+        firebase.database().ref(`/users/${currentUser.uid}/employees/${uid}`)
+       .set({ firstName, lastName, phoneNum, email, gender })
+       .then(
+        () => this.props.navigation.navigate('TodoList')
+    )
     }
 
 
@@ -55,19 +58,17 @@ class EditTodo extends Component {
     }
 
     onAccept(){
-        // const { currentUser } = firebase.auth();
-        // firebase.database().ref(`/users/${currentUser.uid}/employees/${uid}`)
-        // .remove().then(
-        //     () => console.log(currentUser)
-        // )
-         const { uid  } = this.props.navigation.state.params;
-         console.log(uid)
-         this.props.deleteUsers(uid);
+        const {uid} = this.props.navigation.state.params;
+        const { currentUser } = firebase.auth();
+        firebase.database().ref(`/users/${currentUser.uid}/employees/${uid}`)
+        .remove()
+        .then(
+            () => this.props.navigation.navigate('TodoList')
+        )
     }
 
 
     render() {
-      //const detail = this.props.navigation.getParam('user','uid')
         return(
             <View style={{flex: 1}}>
 
